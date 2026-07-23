@@ -1,0 +1,8 @@
+[
+    {
+        "op": "add",
+        "path": "/behaviors/0",
+        "value": { "name": "Wayfinder" },
+        "file": "game:itemtypes/tool/chisel.json"
+    }
+]

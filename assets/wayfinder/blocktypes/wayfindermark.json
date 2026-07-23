@@ -1,0 +1,107 @@
+{
+    "code": "wayfindermark",
+    "class": "BlockWayfinderMark",
+    "variantgroups": [
+        { 
+            "code": "type", 
+            "states": ["arrow-up", "arrow-down", "arrow-left", "arrow-right", "explored", "danger", "resources"] 
+        },
+        {
+            "code": "orientation",
+            "states": ["north", "east", "south", "west", "upn", "upe", "ups", "upw", "downn", "downe", "downs", "downw"]
+        }
+    ],
+    "behaviors": [
+        { "name": "Unstable" }
+    ],
+    "creativeinventory": {
+        "general": ["*"],
+        "decorative": ["*"]
+    },
+    "shape": {
+        "base": "block/wayfindermark",
+        "rotateYByType": {
+            "*-north": 0,
+            "*-east": 270,
+            "*-south": 180,
+            "*-west": 90
+        },
+        "rotateXByType": {
+            "*-upn": 90,
+            "*-upe": 90,
+            "*-ups": 90,
+            "*-upw": 90,
+            "*-downn": 270,
+            "*-downe": 270,
+            "*-downs": 270,
+            "*-downw": 270
+        },
+        "rotateZByType": {
+            "*-upn": 180,
+            "*-upe": 270,
+            "*-ups": 0,
+            "*-upw": 90,
+            "*-downn": 0,
+            "*-downe": 270,
+            "*-downs": 180,
+            "*-downw": 90
+        }
+    },
+    "textures": {
+        "mark": { 
+            "base": "block/{type}"
+        },
+        "back": {
+            "base": "block/mark-back"
+        }
+    },
+    "drawtype": "json",
+    "renderpass": "opaque",
+    "lightAbsorption": 0,
+    "walkspeedMultiplier": 1,
+    "dragMultiplier": 1,
+    "replaceable": 500,
+    "resistance": 0.5,
+    "sounds": {
+        "place": "sounds/block/rock-hit-pickaxe",
+        "break": "sounds/block/rock-hit-pickaxe",
+        "hit": "sounds/block/rock-hit-pickaxe"
+    },
+    "sidesolid": {
+        "all": false
+    },
+    "sideopaque": {
+        "all": false
+    },
+    "collisionbox": null,
+    "selectionbox": {
+        "x1": 0.125, "y1": 0.125, "z1": 0.96875,
+        "x2": 0.875, "y2": 0.875, "z2": 1.0,
+        "rotateYByType": {
+            "*-north": 0,
+            "*-east": 270,
+            "*-south": 180,
+            "*-west": 90
+        },
+        "rotateXByType": {
+            "*-upn": 90,
+            "*-upe": 90,
+            "*-ups": 90,
+            "*-upw": 90,
+            "*-downn": 270,
+            "*-downe": 270,
+            "*-downs": 270,
+            "*-downw": 270
+        },
+        "rotateZByType": {
+            "*-upn": 180,
+            "*-upe": 270,
+            "*-ups": 0,
+            "*-upw": 90,
+            "*-downn": 0,
+            "*-downe": 270,
+            "*-downs": 180,
+            "*-downw": 90
+        }
+    }
+}

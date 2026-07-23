@@ -1,0 +1,26 @@
+{
+    "editor": {
+        "allAngles": false,
+        "entityTextureMode": false
+    },
+    "textureWidth": 16,
+    "textureHeight": 16,
+    "textureSizes": {},
+    "elements": [
+        {
+            "name": "mark_panel",
+            "from": [ 2, 2, 15.5 ],
+            "to": [ 14, 14, 16 ],
+            "rotationOrigin": [ 8, 8, 16 ],
+            "faces": {
+                "north": { "texture": "#mark", "uv": [ 2, 2, 14, 14 ] },
+                "south": { "texture": "#back", "uv": [ 2, 2, 14, 14 ] },
+                "east":  { "texture": "#back", "uv": [ 0, 2, 0.5, 14 ] },
+                "west":  { "texture": "#back", "uv": [ 0, 2, 0.5, 14 ] },
+                "up":    { "texture": "#back", "uv": [ 2, 0, 14, 0.5 ] },
+                "down":  { "texture": "#back", "uv": [ 2, 0, 14, 0.5 ] }
+            }
+        }
+    ],
+    "animations": []
+}

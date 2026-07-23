@@ -1,0 +1,14 @@
+{
+    "block-wayfindermark-arrow-up-*": "Wayfinder Mark (Arrow Up)",
+    "block-wayfindermark-arrow-down-*": "Wayfinder Mark (Arrow Down)",
+    "block-wayfindermark-arrow-left-*": "Wayfinder Mark (Arrow Left)",
+    "block-wayfindermark-arrow-right-*": "Wayfinder Mark (Arrow Right)",
+    "block-wayfindermark-explored-*": "Wayfinder Mark (Explored)",
+    "block-wayfindermark-danger-*": "Wayfinder Mark (Danger)",
+    "block-wayfindermark-resources-*": "Wayfinder Mark (Resources)",
+    
+    "blockhelp-wayfindermark-*": "A chiseled cave mark for navigation.",
+    
+    "wayfinder:heldhelp-placemark": "Place wayfinder mark",
+    "wayfinder:heldhelp-cyclemark": "Cycle mark type"
+}
