@@ -4,7 +4,7 @@
     "variantgroups": [
         { 
             "code": "type", 
-            "states": ["arrow-up", "arrow-down", "arrow-left", "arrow-right", "explored", "danger", "resources"] 
+            "states": ["arrow-up", "arrow-down", "arrow-left", "arrow-right", "explored", "danger", "resources", "home", "water", "deadend", "cache"]
         },
         {
             "code": "orientation",
@@ -56,7 +56,7 @@
         }
     },
     "drawtype": "json",
-    "renderpass": "opaque",
+    "renderpass": "transparent",
     "lightAbsorption": 0,
     "walkspeedMultiplier": 1,
     "dragMultiplier": 1,

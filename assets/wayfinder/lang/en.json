@@ -6,6 +6,10 @@
     "block-wayfindermark-explored-*": "Wayfinder Mark (Explored)",
     "block-wayfindermark-danger-*": "Wayfinder Mark (Danger)",
     "block-wayfindermark-resources-*": "Wayfinder Mark (Resources)",
+    "block-wayfindermark-home-*": "Wayfinder Mark (Home)",
+    "block-wayfindermark-water-*": "Wayfinder Mark (Water)",
+    "block-wayfindermark-deadend-*": "Wayfinder Mark (Dead End)",
+    "block-wayfindermark-cache-*": "Wayfinder Mark (Cache)",
     
     "blockhelp-wayfindermark-*": "A chiseled cave mark for navigation.",
     

@@ -16,7 +16,11 @@ namespace Wayfinder
             "arrow-right",
             "explored",
             "danger",
-            "resources"
+            "resources",
+            "home",
+            "water",
+            "deadend",
+            "cache"
         };
 
         private ICoreAPI api;
@@ -178,6 +182,10 @@ namespace Wayfinder
                 "explored" => "Explored ✓",
                 "danger" => "Danger ⚠",
                 "resources" => "Resources ⛏",
+                "home" => "Home ⌂",
+                "water" => "Water ≈",
+                "deadend" => "Dead End ⊥",
+                "cache" => "Cache ◆",
                 _ => markType
             };
         }
