@@ -7,10 +7,16 @@ MODS_PATH="$HOME/.config/VintagestoryData/Mods"
 STAGING_DIR="bin/staging"
 BUILD_OUTPUT="bin/Debug/Mods/Wayfinder"
 
+# ModDB requires the version in the filename, so derive it from modinfo.json
+# rather than hardcoding it. Old versioned zips are removed on deploy so the
+# game never loads two copies of the mod side by side.
+VERSION=$(grep -oP '"version":\s*"\K[^"]+' modinfo.json)
+ZIP_NAME="${MOD_NAME}-${VERSION}.zip"
+
 echo "--- 1. CLEANING ---"
 dotnet clean -v q
 rm -rf "$STAGING_DIR"
-rm -f "$MOD_NAME.zip"
+rm -f "$MOD_NAME"*.zip
 
 echo "--- 2. BUILDING (net10.0 / VS 1.22) ---"
 dotnet build -c Debug
@@ -27,11 +33,11 @@ cp "$BUILD_OUTPUT/Wayfinder.dll" "$STAGING_DIR/"
 cp -r assets "$STAGING_DIR/"
 
 cd "$STAGING_DIR"
-zip -r -q ../../"$MOD_NAME.zip" *
+zip -r -q ../../"$ZIP_NAME" *
 cd ../..
 
 echo "--- 4. DEPLOYING ZIP ---"
-rm -f "$MODS_PATH/$MOD_NAME.zip"
-mv "$MOD_NAME.zip" "$MODS_PATH/"
+rm -f "$MODS_PATH/$MOD_NAME"*.zip
+mv "$ZIP_NAME" "$MODS_PATH/"
 
-echo "Deploy Complete: $MODS_PATH/$MOD_NAME.zip"
+echo "Deploy Complete: $MODS_PATH/$ZIP_NAME"

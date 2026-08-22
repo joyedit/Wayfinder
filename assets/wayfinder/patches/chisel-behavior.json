@@ -1,8 +1,14 @@
 [
-    {
-        "op": "add",
-        "path": "/behaviors/0",
-        "value": { "name": "Wayfinder" },
-        "file": "game:itemtypes/tool/chisel.json"
-    }
+	{
+		"op": "add",
+		"path": "/behaviorsByType/@(.*-steel|.*-meteoriciron|.*-iron)/0",
+		"value": { "name": "Wayfinder" },
+		"file": "game:itemtypes/tool/chisel.json"
+	},
+	{
+		"op": "add",
+		"path": "/behaviorsByType/*/0",
+		"value": { "name": "Wayfinder" },
+		"file": "game:itemtypes/tool/chisel.json"
+	}
 ]
