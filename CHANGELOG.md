@@ -2,6 +2,16 @@
 
 All notable changes to Wayfinder are documented here. Newest first.
 
+## 1.4.0 — 2026-09-17
+
+### Added
+- **Translocator ◎ mark** — a chiseled spiral closing into a ring, for marking
+  the way to a translocator.
+- **Selected-mark icon.** While you hold a chisel, a small icon of the selected
+  mark sits to the left of the hotbar and changes as you cycle with Ctrl+U. If
+  Pattern Mining is installed, it lines up just left of that mod's pattern grid
+  and matches its size (following its `HudScale` / `HudDotSpacing` settings).
+
 ## 1.3.1 — 2026-08-22
 
 ### Fixed

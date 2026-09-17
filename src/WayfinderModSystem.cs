@@ -20,10 +20,12 @@ namespace Wayfinder
             "home",
             "water",
             "deadend",
-            "cache"
+            "cache",
+            "translocator"
         };
 
         private ICoreAPI api;
+        private MarkHudRenderer markHud;
         
         // Track selected mark type per player (client-side only for now)
         public int SelectedMarkIndex { get; set; } = 0;
@@ -47,6 +49,20 @@ namespace Wayfinder
 
             // Intercept right-click BEFORE ItemChisel gets it
             capi.Event.MouseDown += OnMouseDown;
+
+            // Selected-mark icon beside the hotbar while a chisel is held
+            markHud = new MarkHudRenderer(capi, this);
+            capi.Event.RegisterRenderer(markHud, EnumRenderStage.Ortho, "wayfindermarkhud");
+        }
+
+        public override void Dispose()
+        {
+            if (markHud != null)
+            {
+                (api as ICoreClientAPI)?.Event.UnregisterRenderer(markHud, EnumRenderStage.Ortho);
+                markHud = null;
+            }
+            base.Dispose();
         }
 
         private void OnMouseDown(MouseEvent e)
@@ -186,6 +202,7 @@ namespace Wayfinder
                 "water" => "Water ≈",
                 "deadend" => "Dead End ⊥",
                 "cache" => "Cache ◆",
+                "translocator" => "Translocator ◎",
                 _ => markType
             };
         }
