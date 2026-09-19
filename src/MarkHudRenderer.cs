@@ -8,7 +8,7 @@ using Vintagestory.API.MathTools;
 namespace Wayfinder
 {
     /// <summary>
-    /// Shows the selected mark type as a small icon while a chisel is held, so
+    /// Shows the selected mark type as a small icon while a marking tool is held, so
     /// players can see what Ctrl+U has cycled to without reading chat.
     ///
     /// It sits just left of Pattern Mining's pattern grid (left of the hotbar)
@@ -81,7 +81,7 @@ namespace Wayfinder
             if (capi.HideGuis) return;
 
             ItemSlot activeSlot = capi.World?.Player?.InventoryManager?.ActiveHotbarSlot;
-            if (!WayfinderModSystem.IsChisel(activeSlot?.Itemstack)) return;
+            if (!WayfinderModSystem.IsMarkingTool(activeSlot?.Itemstack)) return;
 
             int textureId = GetTextureId(mod.GetCurrentMarkType());
             if (textureId == 0) return;

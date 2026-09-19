@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -39,6 +40,24 @@ namespace Wayfinder
             api.RegisterCollectibleBehaviorClass("Wayfinder", typeof(CollectibleBehaviorWayfinder));
         }
 
+        public override void AssetsFinalize(ICoreAPI api)
+        {
+            base.AssetsFinalize(api);
+
+            // Chisels get the help behavior from a JSON patch. The primitive tools
+            // are attached here instead: stone.json keys its behaviors by type with
+            // a "*" catch-all, so a patch can't target just chert and obsidian.
+            foreach (Item item in api.World.Items)
+            {
+                if (item?.Code == null || !IsPrimitiveMarker(item.Code.Path)) continue;
+                if (item.HasBehavior<CollectibleBehaviorWayfinder>()) continue;
+
+                item.CollectibleBehaviors = item.CollectibleBehaviors
+                    .Append(new CollectibleBehaviorWayfinder(item))
+                    .ToArray();
+            }
+        }
+
         public override void StartClientSide(ICoreClientAPI capi)
         {
             base.StartClientSide(capi);
@@ -50,7 +69,7 @@ namespace Wayfinder
             // Intercept right-click BEFORE ItemChisel gets it
             capi.Event.MouseDown += OnMouseDown;
 
-            // Selected-mark icon beside the hotbar while a chisel is held
+            // Selected-mark icon beside the hotbar while a marking tool is held
             markHud = new MarkHudRenderer(capi, this);
             capi.Event.RegisterRenderer(markHud, EnumRenderStage.Ortho, "wayfindermarkhud");
         }
@@ -80,18 +99,26 @@ namespace Wayfinder
             ItemSlot activeSlot = player.InventoryManager.ActiveHotbarSlot;
             if (activeSlot?.Itemstack == null) return;
 
-            // Only when holding a chisel
-            if (!IsChisel(activeSlot.Itemstack)) return;
+            // Only when holding a chisel or a primitive marking tool
+            ItemStack tool = activeSlot.Itemstack;
+            if (!IsMarkingTool(tool)) return;
 
             // Don't intercept if hammer is in offhand (let normal chiseling work)
-            ItemSlot offhandSlot = player.InventoryManager.GetHotbarInventory()?[10];
-            if (offhandSlot?.Itemstack?.Collectible?.Code?.Path?.Contains("hammer") == true)
+            if (IsChisel(tool))
             {
-                return;
+                ItemSlot offhandSlot = player.InventoryManager.GetHotbarInventory()?[10];
+                if (offhandSlot?.Itemstack?.Collectible?.Code?.Path?.Contains("hammer") == true)
+                {
+                    return;
+                }
             }
 
             var blockSel = player.CurrentBlockSelection;
             if (blockSel == null) return;
+
+            // Sneak+right-click on a floor with flint or stone is vanilla knapping /
+            // loose-stone placement, so those tools only mark walls and ceilings.
+            if (blockSel.Face == BlockFacing.UP && !CanMarkFloors(tool)) return;
 
             // Check if targeting markable rock
             Block targetBlock = capi.World.BlockAccessor.GetBlock(blockSel.Position);
@@ -151,8 +178,8 @@ namespace Wayfinder
             ItemSlot activeSlot = player.InventoryManager.ActiveHotbarSlot;
             if (activeSlot?.Itemstack == null) return false;
 
-            // Only cycle if holding a chisel
-            if (!IsChisel(activeSlot.Itemstack)) return false;
+            // Only cycle if holding a marking tool
+            if (!IsMarkingTool(activeSlot.Itemstack)) return false;
 
             SelectedMarkIndex = (SelectedMarkIndex + 1) % MarkTypes.Length;
             string markName = GetMarkDisplayName(MarkTypes[SelectedMarkIndex]);
@@ -166,6 +193,35 @@ namespace Wayfinder
             if (stack?.Collectible == null) return false;
             string code = stack.Collectible.Code?.Path ?? "";
             return code.Contains("chisel");
+        }
+
+        /// <summary>
+        /// Anything that can scratch a mark: chisels, plus pre-copper-age tools
+        /// (flint, chert, obsidian, antler).
+        /// </summary>
+        public static bool IsMarkingTool(ItemStack stack)
+        {
+            if (stack?.Collectible == null) return false;
+            return IsChisel(stack) || IsPrimitiveMarker(stack.Collectible.Code?.Path);
+        }
+
+        public static bool IsPrimitiveMarker(string code)
+        {
+            if (code == null) return false;
+            return code == "flint" ||
+                   code == "stone-chert" ||
+                   code == "stone-obsidian" ||
+                   code.StartsWith("antler-");
+        }
+
+        /// <summary>
+        /// Flint and stones already use Sneak+Right-Click on the ground (knapping,
+        /// loose stones), so they can't claim floors. Chisels and antlers can.
+        /// </summary>
+        public static bool CanMarkFloors(ItemStack stack)
+        {
+            string code = stack?.Collectible?.Code?.Path ?? "";
+            return IsChisel(stack) || code.StartsWith("antler-");
         }
 
         public static bool IsMarkableSurface(Block block)

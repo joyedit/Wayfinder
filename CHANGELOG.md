@@ -2,6 +2,18 @@
 
 All notable changes to Wayfinder are documented here. Newest first.
 
+## 1.5.0 — 2026-09-18
+
+### Added
+- **Stone Age marking tools.** You don't need a copper chisel to leave marks
+  anymore: Sneak+Right-Click rock with **flint**, **chert**, **obsidian**, or
+  any **antler** to scratch the selected mark. Ctrl+U cycling and the
+  selected-mark icon work with these too.
+  - Flint, chert, and obsidian mark **walls and ceilings only**. Their
+    Sneak+Right-Click on the ground is vanilla knapping and loose-stone
+    placement, which keeps working as before.
+  - Antlers have no ground action, so like chisels they can mark floors too.
+
 ## 1.4.0 — 2026-09-17
 
 ### Added
