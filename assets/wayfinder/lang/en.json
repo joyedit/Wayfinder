@@ -10,6 +10,7 @@
     "block-wayfindermark-water-*": "Wayfinder Mark (Water)",
     "block-wayfindermark-deadend-*": "Wayfinder Mark (Dead End)",
     "block-wayfindermark-cache-*": "Wayfinder Mark (Cache)",
+    "block-wayfindermark-translocator-*": "Wayfinder Mark (Translocator)",
     
     "blockhelp-wayfindermark-*": "A chiseled cave mark for navigation.",
     

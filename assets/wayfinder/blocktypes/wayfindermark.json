@@ -4,7 +4,7 @@
     "variantgroups": [
         { 
             "code": "type", 
-            "states": ["arrow-up", "arrow-down", "arrow-left", "arrow-right", "explored", "danger", "resources", "home", "water", "deadend", "cache"]
+            "states": ["arrow-up", "arrow-down", "arrow-left", "arrow-right", "explored", "danger", "resources", "home", "water", "deadend", "cache", "translocator"]
         },
         {
             "code": "orientation",
