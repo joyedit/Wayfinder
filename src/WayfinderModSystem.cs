@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
@@ -25,6 +26,15 @@ namespace Wayfinder
             "translocator"
         };
 
+        private const string ChannelName = "wayfinder";
+
+        /// <summary>
+        /// How far from the clicked rock a player may be when the mark request
+        /// lands, squared. Generous next to the ~4.5 block picking range, so lag
+        /// never eats a legitimate mark.
+        /// </summary>
+        private const float MaxMarkDistanceSquared = 100f;
+
         private ICoreAPI api;
         private MarkHudRenderer markHud;
         
@@ -38,6 +48,10 @@ namespace Wayfinder
             
             api.RegisterBlockClass("BlockWayfinderMark", typeof(BlockWayfinderMark));
             api.RegisterCollectibleBehaviorClass("Wayfinder", typeof(CollectibleBehaviorWayfinder));
+
+            // Registered on both sides here so the channel's message types line up.
+            api.Network.RegisterChannel(ChannelName)
+                .RegisterMessageType<PlaceMarkPacket>();
         }
 
         public override void AssetsFinalize(ICoreAPI api)
@@ -72,6 +86,14 @@ namespace Wayfinder
             // Selected-mark icon beside the hotbar while a marking tool is held
             markHud = new MarkHudRenderer(capi, this);
             capi.Event.RegisterRenderer(markHud, EnumRenderStage.Ortho, "wayfindermarkhud");
+        }
+
+        public override void StartServerSide(ICoreServerAPI sapi)
+        {
+            base.StartServerSide(sapi);
+
+            sapi.Network.GetChannel(ChannelName)
+                .SetMessageHandler<PlaceMarkPacket>(OnPlaceMarkPacket);
         }
 
         public override void Dispose()
@@ -139,32 +161,90 @@ namespace Wayfinder
             // Must be air
             if (blockAtMarkPos.Id != 0 && blockAtMarkPos.Code?.Path != "air") return;
 
-            // Place the mark
-            string markType = GetCurrentMarkType();
-            string orientation = blockSel.Face.Code;
+            // Ask the server to place it. Setting the block here instead would only
+            // touch the client's copy of the chunk: the server would never learn
+            // about the mark, so it'd never be saved and would vanish on relog.
+            // The sound and the confirmation come back from the server with it.
+            int yawFacingIndex = -1;
             if (blockSel.Face == BlockFacing.UP || blockSel.Face == BlockFacing.DOWN)
             {
-                BlockFacing yawFacing = BlockFacing.HorizontalFromYaw(player.Entity.Pos.Yaw);
-                orientation += yawFacing.Code.Substring(0, 1);
+                yawFacingIndex = BlockFacing.HorizontalFromYaw(player.Entity.Pos.Yaw).Index;
             }
-            string blockCode = $"wayfinder:wayfindermark-{markType}-{orientation}";
-            Block markBlock = capi.World.GetBlock(new AssetLocation(blockCode));
 
-            if (markBlock == null)
+            capi.Network.GetChannel(ChannelName).SendPacket(new PlaceMarkPacket
             {
-                capi.Logger.Warning($"[Wayfinder] Could not find block: {blockCode}");
-                return;
-            }
-
-            capi.World.BlockAccessor.SetBlock(markBlock.BlockId, markPos);
-            capi.World.PlaySoundAt(new AssetLocation("sounds/block/rock-hit-pickaxe"),
-                markPos.X + 0.5, markPos.Y + 0.5, markPos.Z + 0.5, player);
-
-            string displayName = GetMarkDisplayName(markType);
-            capi.ShowChatMessage($"Marked: {displayName}");
+                X = blockSel.Position.X,
+                Y = blockSel.Position.Y,
+                Z = blockSel.Position.Z,
+                Dimension = blockSel.Position.dimension,
+                FaceIndex = blockSel.Face.Index,
+                YawFacingIndex = yawFacingIndex,
+                MarkIndex = SelectedMarkIndex
+            });
 
             // Consume the event so ItemChisel never sees it
             e.Handled = true;
+        }
+
+        /// <summary>
+        /// Authoritative placement. The client has already checked all of this, but
+        /// it checks it on its own copy of the world and nothing stops a crafted
+        /// packet, so every condition is re-tested here against server state.
+        /// </summary>
+        private void OnPlaceMarkPacket(IServerPlayer fromPlayer, PlaceMarkPacket packet)
+        {
+            ICoreServerAPI sapi = api as ICoreServerAPI;
+            if (sapi == null || fromPlayer?.Entity == null) return;
+
+            if (packet.MarkIndex < 0 || packet.MarkIndex >= MarkTypes.Length) return;
+            if (packet.FaceIndex < 0 || packet.FaceIndex >= BlockFacing.ALLFACES.Length) return;
+
+            BlockFacing face = BlockFacing.ALLFACES[packet.FaceIndex];
+            BlockPos targetPos = new BlockPos(packet.X, packet.Y, packet.Z, packet.Dimension);
+
+            ItemStack tool = fromPlayer.InventoryManager?.ActiveHotbarSlot?.Itemstack;
+            if (!IsMarkingTool(tool)) return;
+            if (face == BlockFacing.UP && !CanMarkFloors(tool)) return;
+
+            float distSq = fromPlayer.Entity.Pos.XYZ.SquareDistanceTo(
+                targetPos.X + 0.5, targetPos.Y + 0.5, targetPos.Z + 0.5);
+            if (distSq > MaxMarkDistanceSquared) return;
+
+            Block targetBlock = sapi.World.BlockAccessor.GetBlock(targetPos);
+            if (!IsMarkableSurface(targetBlock)) return;
+
+            BlockPos markPos = targetPos.AddCopy(face);
+            Block blockAtMarkPos = sapi.World.BlockAccessor.GetBlock(markPos);
+            if (blockAtMarkPos.Id != 0 && blockAtMarkPos.Code?.Path != "air") return;
+
+            string markType = MarkTypes[packet.MarkIndex];
+            string orientation = face.Code;
+            if (face == BlockFacing.UP || face == BlockFacing.DOWN)
+            {
+                if (packet.YawFacingIndex < 0 || packet.YawFacingIndex >= BlockFacing.ALLFACES.Length) return;
+                BlockFacing yawFacing = BlockFacing.ALLFACES[packet.YawFacingIndex];
+                if (!yawFacing.IsHorizontal) return;
+                orientation += yawFacing.Code.Substring(0, 1);
+            }
+
+            string blockCode = $"wayfinder:wayfindermark-{markType}-{orientation}";
+            Block markBlock = sapi.World.GetBlock(new AssetLocation(blockCode));
+
+            if (markBlock == null)
+            {
+                sapi.Logger.Warning($"[Wayfinder] Could not find block: {blockCode}");
+                return;
+            }
+
+            sapi.World.BlockAccessor.SetBlock(markBlock.BlockId, markPos);
+
+            // null, not fromPlayer: that argument is the player to skip, and nothing
+            // plays this sound client-side any more, so the marker must hear it too.
+            sapi.World.PlaySoundAt(new AssetLocation("sounds/block/rock-hit-pickaxe"),
+                markPos.X + 0.5, markPos.Y + 0.5, markPos.Z + 0.5, (IPlayer)null, true, 32f);
+
+            fromPlayer.SendMessage(GlobalConstants.GeneralChatGroup,
+                $"Marked: {GetMarkDisplayName(markType)}", EnumChatType.Notification);
         }
 
         private bool OnCycleMarkHotkey(KeyCombination comb)

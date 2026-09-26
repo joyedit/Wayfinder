@@ -2,6 +2,22 @@
 
 All notable changes to Wayfinder are documented here. Newest first.
 
+## 1.5.1 — 2026-09-26
+
+### Fixed
+- **Marks no longer vanish when you leave the world.** Placement ran entirely on
+  the client: the mark block was written straight into the client's copy of the
+  chunk and the server was never told, so nothing was ever saved. Marks survived
+  only as long as that chunk stayed loaded — closing the game, relogging, or just
+  walking far enough away and coming back wiped them. Placement is now a request
+  to the server, which validates it and places the block authoritatively, so marks
+  are persisted with the world like any other block. The same bug affected
+  multiplayer, where marks were visible only to the player who etched them.
+  - The etching sound and the "Marked:" confirmation now come back from the
+    server along with the block.
+  - Marks etched before this release were never written to disk and can't be
+    recovered; they'll need to be re-etched.
+
 ## 1.5.0 — 2026-09-18
 
 ### Added
